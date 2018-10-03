@@ -29,7 +29,7 @@ class Item(Base):
     price = Column(String(8))
     course = Column(String(250))
     category_id = Column(Integer,ForeignKey('category.id'))
-    restaurant = relationship(Restaurant)
+    category = relationship(Category)
 
 
     @property
