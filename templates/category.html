@@ -1,0 +1,45 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
+
+
+<div class = 'flash'>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+            <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+</div>
+
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+      <div class="col-md-4">
+          <h3>Categories</h3>
+        {% for category in categories %}
+    		  <div><a href="/">{{ category.name }}</a></div>
+      	{% endfor %}
+      </div>
+
+      <div class="col-md-8">
+        <div class="newItem">
+          <a href="{{url_for('newItem')}}">Add Item</a>
+        </div>
+
+        <h3>{{ main_category }} ({{ items | length }})</h3>
+
+        {% for item in items %}
+  			   <div class="item"><a href="/catalog/"{{ item.id }}>{{ item.name }}</a> <span class="category">({{ item.category.name }})</span></div>
+      	{% endfor %}
+      </div>
+    </div>
+	</div>
+</div>
+
+{% endblock %}
