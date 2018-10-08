@@ -24,7 +24,8 @@
        <div class="item-description">{{ item.description }}</div>
        {% if 'username' in session %}
           {% if session.user_id == creator.id %}
-            <a href="{{ url_for('editItem') }}">Edit</a> | <a href="{{ url_for('deleteItem') }}">Delete</a>
+            <a href="{{ url_for('editItem', item_name = item.name) }}">Edit</a> |
+            <a href="{{ url_for('deleteItem', item_name = item.name) }}">Delete</a>
           {% endif %}
        {% endif %}
     </div>

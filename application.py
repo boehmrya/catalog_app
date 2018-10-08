@@ -14,6 +14,7 @@ import httplib2
 import json
 from flask import make_response
 import requests
+from datetime import datetime
 
 
 #Connect to Database and create database session
@@ -298,21 +299,24 @@ def editItem(item_name):
         editedItem.name = request.form['name']
         editedItem.category_id = request.form['category']
         editedItem.updated = datetime.now()
-        flash('Item Successfully Edited %s' % editedItem.name)
-        return redirect(url_for('item'))
+        flash('Item %s Successfully Edited' % editedItem.name)
+        return redirect(url_for('showItem', item_id = editedItem.id))
   else:
-    return render_template('editItem.html', item = editedItem)
+    categories = session.query(Category).order_by(asc(Category.name)).all()
+    selected_category = session.query(Category).filter_by(id = editedItem.category_id).one()
+    return render_template('editItem.html', item = editedItem, categories = categories,
+                            selected_category = selected_category )
 
 
 #Delete an item
-@app.route('/catalog/<item_id>/delete/', methods = ['GET','POST'])
-def deleteRestaurant(item_id):
-  itemToDelete = session.query(Item).filter_by(name = item_id).one()
+@app.route('/catalog/<item_name>/delete/', methods = ['GET','POST'])
+def deleteItem(item_name):
+  itemToDelete = session.query(Item).filter_by(name = item_name).one()
   if request.method == 'POST':
     session.delete(itemToDelete)
     flash('%s Successfully Deleted' % itemToDelete.name)
     session.commit()
-    return redirect(url_for('home'))
+    return redirect(url_for('showHome'))
   else:
     return render_template('deleteItem.html', item = itemToDelete)
 
