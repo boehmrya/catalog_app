@@ -4,7 +4,7 @@ from datetime import datetime
 
 from database_setup import Base, Category, User, Item
 
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance
 Base.metadata.bind = engine
@@ -44,53 +44,49 @@ session.commit()
 
 
 # add user
-myFirstUser = User(name = 'ryan')
+myFirstUser = User(name = 'ryan', email="ryan.w.boehm@gmail.com", picture = 'https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png')
 session.add(myFirstUser)
-session.commit()
-
-mySecondUser = User(name = 'bob')
-session.add(mySecondUser)
 session.commit()
 
 
 
 # add items
-myFirstItem = Item(name = 'Pizza', description = 'classic italian pizza', author = myFirstUser,
+myFirstItem = Item(name = 'Pizza', description = 'classic italian pizza', author_id = 1,
     category = myFirstCategory, created = datetime.now(), updated = datetime.now())
 session.add(myFirstItem)
 session.commit()
 
-mySecondItem = Item(name = 'Ramen', description = 'excellent noodle dish', author = myFirstUser,
+mySecondItem = Item(name = 'Ramen', description = 'excellent noodle dish', author_id = 1,
     category = myFirstCategory, created = datetime.now(), updated = datetime.now())
 session.add(mySecondItem)
 session.commit()
 
-myThirdItem = Item(name = 'Pasta', description = 'excellent italian pasta dish', author = myFirstUser,
+myThirdItem = Item(name = 'Pasta', description = 'excellent italian pasta dish', author_id = 1,
     category = mySecondCategory, created = datetime.now(), updated = datetime.now())
 session.add(myThirdItem)
 session.commit()
 
-myFourthItem = Item(name = 'Hamburgers', description = 'classic american food', author = myFirstUser,
+myFourthItem = Item(name = 'Hamburgers', description = 'classic american food', author_id = 1,
     category = mySecondCategory, created = datetime.now(), updated = datetime.now())
 session.add(myFourthItem)
 session.commit()
 
-myFifthItem = Item(name = 'Seafood', description = 'clam chowder and other specialties', author = mySecondUser,
+myFifthItem = Item(name = 'Seafood', description = 'clam chowder and other specialties', author_id = 1,
     category = myThirdCategory, created = datetime.now(), updated = datetime.now())
 session.add(myFifthItem)
 session.commit()
 
-mySixthItem = Item(name = 'Sandwiches', description = 'bare bones lunch specials', author = mySecondUser,
+mySixthItem = Item(name = 'Sandwiches', description = 'bare bones lunch specials', author_id = 1,
     category = myThirdCategory, created = datetime.now(), updated = datetime.now())
 session.add(mySixthItem)
 session.commit()
 
-mySeventhItem = Item(name = 'Chinese food', description = 'hunan beef and lomein dishes', author = mySecondUser,
+mySeventhItem = Item(name = 'Chinese food', description = 'hunan beef and lomein dishes', author_id = 1,
     category = myFourthCategory, created = datetime.now(), updated = datetime.now())
 session.add(mySeventhItem)
 session.commit()
 
-myEigthItem = Item(name = 'Sushi', description = 'raw seafood', author = mySecondUser,
+myEigthItem = Item(name = 'Sushi', description = 'raw seafood', author_id = 1,
     category = myFourthCategory, created = datetime.now(), updated = datetime.now())
 session.add(myEigthItem)
 session.commit()

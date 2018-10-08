@@ -3,7 +3,6 @@
 {% include "header.html" %}
 
 
-
 <div class = 'flash'>
   {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -23,19 +22,21 @@
       <div class="col-md-4">
           <h3>Categories</h3>
         {% for category in categories %}
-    		  <div><a href="/catalog/"{{ category.id }}>{{ category.name }}</a></div>
+    		  <div><a href="{{ url_for('showCategory', category_id = category.id) }}">{{ category.name }}</a></div>
       	{% endfor %}
       </div>
 
       <div class="col-md-8">
-        <div class="newItem">
-          <a href="{{url_for('newItem')}}">Add Item</a>
-        </div>
+        {% if 'username' in session %}
+          <div class="newItem">
+            <a href="{{ url_for('newItem') }}">Add Item</a>
+          </div>
+        {% endif %}
 
         <h3>Latest Items</h3>
 
         {% for item in items %}
-  			   <div class="item"><a href="/catalog/"{{ item.id }}>{{ item.name }}</a> <span class="category">({{ item.category.name }})</span></div>
+  			   <div class="item"><a href="{{ url_for('showItem', item_id = item.id) }}">{{ item.name }}</a> <span class="category">({{ item.category.name }})</span></div>
       	{% endfor %}
       </div>
     </div>

@@ -30,13 +30,16 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
+    email = Column(String(250), nullable=False)
+    picture = Column(String(250))
 
     @property
     def serialize(self):
        """Return object data in easily serializeable format"""
        return {
-           'name'         : self.name,
            'id'           : self.id,
+           'name'         : self.name,
+           'email'           : self.email,
        }
 
 
@@ -44,7 +47,7 @@ class Item(Base):
     __tablename__ = 'item'
 
 
-    name =Column(String(80), nullable = False)
+    name = Column(String(80), nullable = False)
     id = Column(Integer, primary_key = True)
     description = Column(String(250))
     author_id = Column(Integer,ForeignKey('user.id'))
@@ -65,6 +68,6 @@ class Item(Base):
        }
 
 
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
 
 Base.metadata.create_all(engine)
