@@ -122,7 +122,7 @@ def fbdisconnect():
     url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
-    return "you have been logged out"
+    return redirect(url_for('showHome'))
 
 
 
@@ -239,7 +239,7 @@ def gdisconnect():
         del login_session['picture']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
-        return response
+        return redirect(url_for('showHome'))
     else:
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'

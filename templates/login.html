@@ -2,20 +2,15 @@
 <html>
 <head>
 
-  <!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
-   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
-  </script>
-
+<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script src="//apis.google.com/js/platform.js?onload=start"> </script>
-
 <!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
-
 
 </head>
 
 
 <body>
-
 
 <!-- GOOGLE PLUS SIGN IN BUTTON-->
 
@@ -39,7 +34,7 @@
     if (authResult['code']) {
       // Hide the sign-in button now that the user is authorized
       $('#signinButton').attr('style', 'display: none');
-      // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main restaurants page
+      // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main home page
       $.ajax({
         type: 'POST',
         url: '/gconnect?state={{STATE}}',
@@ -122,16 +117,12 @@
 
 <button>
 
-
-          <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
+<fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
 <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
 
-</fb:login-button>
-
-
-        </button>
+</fb:login-button></button>
 <!--END FACEBOOK SIGN IN -->
 
-  </body>
+</body>
 
-  </html>
+</html>
