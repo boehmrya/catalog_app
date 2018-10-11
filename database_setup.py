@@ -5,10 +5,13 @@ from sqlalchemy import create_engine
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 
+
 Base = declarative_base()
+
 
 def _get_date():
     return datetime.now()
+
 
 class Category(Base):
     __tablename__ = 'category'

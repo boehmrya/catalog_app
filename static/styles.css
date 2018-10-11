@@ -1,3 +1,61 @@
+html,
+body {
+  height: 100%;
+  background: #eee;
+}
+
+.container-fluid .row.top-menu {
+  background: #021F40;
+  padding: 20px 0;
+  height: auto;
+}
+
+.container-fluid .row.top-menu a {
+  color: #fff;
+}
+
+.container-fluid .row.top-menu h2 {
+  margin-top: 0;
+}
+
+.container.main-body {
+  margin-top: 30px;
+  padding: 30px;
+  background: #fff;
+}
+
+.category,
+.item {
+  margin-bottom: 5px;
+}
+
+.category a,
+.item a {
+  font-size: 16px;
+  color: #E35031;
+}
+
+.category-tag {
+  font-size: 16px;
+  color: #666;
+}
+
+.newItem {
+  margin-bottom: 5px;
+}
+
+.item-description {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.container.main-body h2,
+.container.main-body h3,
+.container.main-body h4 {
+  margin-top: 0;
+  color: #021F40;
+}
+
 .delete-form {
   float: left;
   margin-right: 10px;

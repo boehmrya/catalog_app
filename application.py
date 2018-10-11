@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
 app = Flask(__name__)
 
+# database and modeling imports
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, User, Item
@@ -42,7 +43,7 @@ def showLogin():
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
-
+# facebook login
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
     if request.args.get('state') != login_session['state']:
@@ -115,6 +116,7 @@ def fbconnect():
     return output
 
 
+# facebook logout
 @app.route('/fbdisconnect')
 def fbdisconnect():
     facebook_id = login_session['facebook_id']
@@ -126,7 +128,7 @@ def fbdisconnect():
     return redirect(url_for('showHome'))
 
 
-
+# google plus login
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -216,6 +218,7 @@ def gconnect():
     return output
 
 
+# google plus logout
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
@@ -250,30 +253,30 @@ def gdisconnect():
 #Show home page
 @app.route('/')
 def showHome():
-  categories = session.query(Category).order_by(asc(Category.name)).limit(10)
+  categories = session.query(Category).order_by(asc(Category.name))
   items = session.query(Item).join(Item.category)
   return render_template('home.html', categories = categories, items = items)
 
 
 #Show category page
-@app.route('/catalog/<category_id>')
-def showCategory(category_id):
-  items = session.query(Item).filter_by(category_id = category_id).order_by(asc(Item.name)).all()
-  categories = session.query(Category).order_by(asc(Category.name)).limit(10)
-  main_category = session.query(Category).filter_by(id = category_id).one()
-  return render_template('category.html', main_category = main_category, categories = categories, items = items)
+@app.route('/catalog/<category_name>/items')
+def showCategory(category_name):
+    main_category = session.query(Category).filter_by(name = category_name).one()
+    categories = session.query(Category).order_by(asc(Category.name))
+    items = session.query(Item).filter_by(category_id = main_category.id).order_by(asc(Item.name)).all()
+    return render_template('category.html', main_category = main_category, categories = categories, items = items)
 
 
 #Show item page
-@app.route('/item/<item_id>')
-def showItem(item_id):
-  item = session.query(Item).filter_by(id = item_id).one()
-  creator = getUserInfo(item.author_id)
-  return render_template('item.html', item = item, creator = creator)
+@app.route('/catalog/<category_name>/<item_name>')
+def showItem(category_name, item_name):
+    item = session.query(Item).filter_by(name = item_name).one()
+    creator = getUserInfo(item.author_id)
+    return render_template('item.html', item = item, creator = creator)
 
 
 #Create a new item
-@app.route('/item/new/', methods=['GET','POST'])
+@app.route('/catalog/item/new/', methods=['GET','POST'])
 def newItem():
     if 'username' not in login_session:
         return redirect('login')
@@ -298,9 +301,10 @@ def editItem(item_name):
       if request.form['name']:
         editedItem.name = request.form['name']
         editedItem.category_id = request.form['category']
+        editedItem.description = request.form['description']
         editedItem.updated = datetime.now()
         flash('Item %s Successfully Edited' % editedItem.name)
-        return redirect(url_for('showItem', item_id = editedItem.id))
+        return redirect(url_for('showItem', category_name = editedItem.category.name, item_name = editedItem.name))
   else:
     categories = session.query(Category).order_by(asc(Category.name)).all()
     selected_category = session.query(Category).filter_by(id = editedItem.category_id).one()
@@ -321,9 +325,7 @@ def deleteItem(item_name):
     return render_template('deleteItem.html', item = itemToDelete)
 
 
-
 # User Helper Functions
-
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
@@ -346,14 +348,41 @@ def getUserID(email):
         return None
 
 
+#JSON API endpoint to view all content
+@app.route('/catalog/JSON')
+def catalogJSON():
+    categories = session.query(Category).order_by(asc(Category.name))
+    newCategories = {}
+    newCategories['Category'] = []
+    for category in categories:
+        newCategory = {}
+        newCategory['id'] = category.id
+        newCategory['name'] = category.name
+        items = session.query(Item).filter_by(category_id = category.id)
+        newItems = [i.serialize for i in items]
+        newCategory['items'] = newItems
 
-#JSON APIs to view Category Information
-@app.route('/catalog/<category_id>/JSON')
-def categoryItemsJSON(category_id):
-    items = session.query(Item).filter_by(category_id = category_id).all()
+        # add serialized version of category to new list
+        newCategories['Category'].append(newCategory)
+    return jsonify(newCategories)
+
+
+#JSON API endpoint to view all items of a given category
+@app.route('/catalog/<category_name>/items/JSON')
+def categoryItemsJSON(category_name):
+    main_category = session.query(Category).filter_by(name = category_name).one()
+    items = session.query(Item).filter_by(category_id = main_category.id).order_by(asc(Item.name)).all()
     return jsonify(Items=[i.serialize for i in items])
 
 
+#JSON API endpoint to view all content of a given item
+@app.route('/catalog/<category_name>/<item_name>/JSON')
+def itemJSON(category_name, item_name):
+    item = session.query(Item).filter_by(name = item_name).one()
+    return jsonify(Item = item.serialize)
+
+
+# run app
 if __name__ == '__main__':
   app.secret_key = 'super_secret_key'
   app.debug = True

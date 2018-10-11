@@ -17,21 +17,26 @@
 </div>
 
 
-<div class="container">
+<div class="container main-body">
 	<div class="row">
 		<div class="col-md-12">
       <div class="col-md-4">
           <h3>Categories</h3>
         {% for category in categories %}
-    		  <div><a href="{{ url_for('showCategory', category_id = category.id) }}">{{ category.name }}</a></div>
+    		  <div class="category">
+            <a href="{{ url_for('showCategory', category_name = category.name) }}">{{ category.name }}</a>
+          </div>
       	{% endfor %}
       </div>
 
       <div class="col-md-8">
-        <h3>{{ main_category.name }} ({{ items | length }})</h3>
+        <h3>{{ main_category.name }} Items ({{ items | length }} Items)</h3>
 
         {% for item in items %}
-  			   <div class="item"><a href="{{ url_for('showItem', item_id = item.id) }}">{{ item.name }}</a> <span class="category">({{ item.category.name }})</span></div>
+  			   <div class="item">
+             <a href="{{ url_for('showItem', category_name = main_category.name, item_name = item.name) }}">{{ item.name }}</a>
+             <span class="category">({{ item.category.name }})</span>
+           </div>
       	{% endfor %}
       </div>
     </div>
