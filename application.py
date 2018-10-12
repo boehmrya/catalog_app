@@ -1,24 +1,23 @@
-from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
-app = Flask(__name__)
-
-# database and modeling imports
+from flask import Flask, render_template, make_response
+from flask import request, redirect, jsonify, url_for, flash
+from flask import session as login_session
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, User, Item
-
-# imports for user sessions
-from flask import session as login_session
-import random, string
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
+from datetime import datetime
 import httplib2
 import json
-from flask import make_response
 import requests
-from datetime import datetime
+import random
+import string
 
 
-#Connect to Database and create database session
+app = Flask(__name__)
+
+
+# Connect to Database and create database session
 engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
 Base.metadata.bind = engine
 
@@ -32,6 +31,7 @@ session = DBSession()
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 
+
 APPLICATION_NAME = "Catalog Application"
 
 
@@ -43,6 +43,7 @@ def showLogin():
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
+
 # facebook login
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
@@ -53,29 +54,30 @@ def fbconnect():
     access_token = request.data
     print "access token received %s " % access_token
 
-
     app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
-        app_id, app_secret, access_token)
+    url = 'https://graph.facebook.com/oauth/access_token?' \
+        'grant_type=fb_exchange_token&client_id=%s&client_secret' \
+        '=%s&fb_exchange_token=%s' % (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-
 
     # Use token to get user info from API
     userinfo_url = "https://graph.facebook.com/v2.8/me"
     '''
-        Due to the formatting for the result from the server token exchange we have to
-        split the token first on commas and select the first index which gives us the key : value
-        for the server access token then we split it on colons to pull out the actual token value
-        and replace the remaining quotes with nothing so that it can be used directly in the graph
-        api calls
+    Due to the formatting for the result from the server token
+    exchange we have to split the token first on commas and select
+    the first index which gives us the key : value for the server
+    access token then we split it on colons to pull out the actual
+    token value and replace the remaining quotes with nothing so that
+    it can be used directly in the graph api calls
     '''
     token = result.split(',')[0].split(':')[1].replace('"', '')
 
-    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email' % token
+    url = 'https://graph.facebook.com/v2.8/me?' \
+        'access_token=%s&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     # print "url sent for API access:%s"% url
@@ -90,7 +92,8 @@ def fbconnect():
     login_session['access_token'] = token
 
     # Get user picture
-    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v2.8/me/picture?' \
+        'access_token=%s&redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -110,7 +113,11 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px;' \
+        'height: 300px;' \
+        'border-radius: 150px;' \
+        '-webkit-border-radius:' \
+        ' 150px;-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     return output
@@ -122,7 +129,8 @@ def fbdisconnect():
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    url = 'https://graph.facebook.com/%s/permissions' \
+        '?access_token=%s' % (facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return redirect(url_for('showHome'))
@@ -181,8 +189,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(json.dumps('Current user is '
+                                            'already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -212,7 +220,11 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px;' \
+        'height: 300px;' \
+        'border-radius: 150px;' \
+        '-webkit-border-radius: 150px;' \
+        '-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
@@ -224,13 +236,15 @@ def gdisconnect():
     access_token = login_session.get('access_token')
     if access_token is None:
         print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(json.dumps('Current user '
+                                            'not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     print 'In gdisconnect access token is %s', access_token
     print 'User name is: '
     print login_session['username']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/' \
+        'revoke?token=%s' % login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -245,90 +259,108 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return redirect(url_for('showHome'))
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(json.dumps('Failed to revoke token'
+                                            'for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
 
-#Show home page
+# Show home page
 @app.route('/')
 def showHome():
-  categories = session.query(Category).order_by(asc(Category.name))
-  items = session.query(Item).join(Item.category)
-  return render_template('home.html', categories = categories, items = items)
+    categories = session.query(Category).order_by(asc(Category.name))
+    items = session.query(Item).join(Item.category)
+    return render_template('home.html', categories=categories, items=items)
 
 
-#Show category page
+# Show category page
 @app.route('/catalog/<category_name>/items')
 def showCategory(category_name):
-    main_category = session.query(Category).filter_by(name = category_name).one()
+    main_category = session.query(Category).filter_by(name=category_name).one()
     categories = session.query(Category).order_by(asc(Category.name))
-    items = session.query(Item).filter_by(category_id = main_category.id).order_by(asc(Item.name)).all()
-    return render_template('category.html', main_category = main_category, categories = categories, items = items)
+    items = session.query(Item).filter_by(category_id=main_category.id)
+    items = items.order_by(asc(Item.name)).all()
+    return render_template('category.html',
+                           main_category=main_category,
+                           categories=categories,
+                           items=items)
 
 
-#Show item page
+# Show item page
 @app.route('/catalog/<category_name>/<item_name>')
 def showItem(category_name, item_name):
-    item = session.query(Item).filter_by(name = item_name).one()
+    item = session.query(Item).filter_by(name=item_name).one()
     creator = getUserInfo(item.author_id)
-    return render_template('item.html', item = item, creator = creator)
+    return render_template('item.html', item=item, creator=creator)
 
 
-#Create a new item
-@app.route('/catalog/item/new/', methods=['GET','POST'])
+# Create a new item
+@app.route('/catalog/item/new/', methods=['GET', 'POST'])
 def newItem():
     if 'username' not in login_session:
         return redirect('login')
     if request.method == 'POST':
-      newItem = Item(name = request.form['name'], description = request.form['description'],
-                    category_id = request.form['category'], author_id = login_session['user_id'],
-                    created = datetime.now(), updated = datetime.now())
-      session.add(newItem)
-      flash('New Item %s Successfully Created' % newItem.name)
-      session.commit()
-      return redirect(url_for('showHome'))
+        newItem = Item(name=request.form['name'],
+                       description=request.form['description'],
+                       category_id=request.form['category'],
+                       author_id=login_session['user_id'],
+                       created=datetime.now(),
+                       updated=datetime.now())
+        session.add(newItem)
+        flash('New Item %s Successfully Created' % newItem.name)
+        session.commit()
+        return redirect(url_for('showHome'))
     else:
-      categories = session.query(Category).order_by(asc(Category.name)).all()
-      return render_template('newItem.html', categories = categories)
+        categories = session.query(Category).order_by(asc(Category.name)).all()
+        return render_template('newItem.html', categories=categories)
 
 
-#Edit an item
-@app.route('/catalog/<item_name>/edit/', methods = ['GET', 'POST'])
+# Edit an item
+@app.route('/catalog/<item_name>/edit/', methods=['GET', 'POST'])
 def editItem(item_name):
-  editedItem = session.query(Item).filter_by(name = item_name).one()
-  if request.method == 'POST':
-      if request.form['name']:
-        editedItem.name = request.form['name']
-        editedItem.category_id = request.form['category']
-        editedItem.description = request.form['description']
-        editedItem.updated = datetime.now()
-        flash('Item %s Successfully Edited' % editedItem.name)
-        return redirect(url_for('showItem', category_name = editedItem.category.name, item_name = editedItem.name))
-  else:
-    categories = session.query(Category).order_by(asc(Category.name)).all()
-    selected_category = session.query(Category).filter_by(id = editedItem.category_id).one()
-    return render_template('editItem.html', item = editedItem, categories = categories,
-                            selected_category = selected_category )
+    editedItem = session.query(Item).filter_by(name=item_name).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedItem.name = request.form['name']
+            editedItem.category_id = request.form['category']
+            editedItem.description = request.form['description']
+            editedItem.updated = datetime.now()
+            flash('Item %s Successfully Edited' % editedItem.name)
+            return redirect(url_for('showItem',
+                                    category_name=editedItem.category.name,
+                                    item_name=editedItem.name))
+    else:
+        if 'username' not in login_session:
+            return redirect('login')
+        else:
+            categories = session.query(Category)
+            categories = categories.order_by(asc(Category.name)).all()
+            cat = session.query(Category)
+            selected_category = cat.filter_by(id=editedItem.category_id).one()
+            return render_template('editItem.html',
+                                   item=editedItem,
+                                   categories=categories,
+                                   selected_category=selected_category)
 
 
-#Delete an item
-@app.route('/catalog/<item_name>/delete/', methods = ['GET','POST'])
+# Delete an item
+@app.route('/catalog/<item_name>/delete/', methods=['GET', 'POST'])
 def deleteItem(item_name):
-  itemToDelete = session.query(Item).filter_by(name = item_name).one()
-  if request.method == 'POST':
-    session.delete(itemToDelete)
-    flash('%s Successfully Deleted' % itemToDelete.name)
-    session.commit()
-    return redirect(url_for('showHome'))
-  else:
-    return render_template('deleteItem.html', item = itemToDelete)
+    itemToDelete = session.query(Item).filter_by(name=item_name).one()
+    if request.method == 'POST':
+        session.delete(itemToDelete)
+        flash('%s Successfully Deleted' % itemToDelete.name)
+        session.commit()
+        return redirect(url_for('showHome'))
+    else:
+        return render_template('deleteItem.html', item=itemToDelete)
 
 
 # User Helper Functions
 def createUser(login_session):
-    newUser = User(name=login_session['username'], email=login_session[
-                   'email'], picture=login_session['picture'])
+    newUser = User(name=login_session['username'],
+                   email=login_session['email'],
+                   picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -348,7 +380,7 @@ def getUserID(email):
         return None
 
 
-#JSON API endpoint to view all content
+# JSON API endpoint to view all content
 @app.route('/catalog/JSON')
 def catalogJSON():
     categories = session.query(Category).order_by(asc(Category.name))
@@ -358,7 +390,7 @@ def catalogJSON():
         newCategory = {}
         newCategory['id'] = category.id
         newCategory['name'] = category.name
-        items = session.query(Item).filter_by(category_id = category.id)
+        items = session.query(Item).filter_by(category_id=category.id)
         newItems = [i.serialize for i in items]
         newCategory['items'] = newItems
 
@@ -367,23 +399,25 @@ def catalogJSON():
     return jsonify(newCategories)
 
 
-#JSON API endpoint to view all items of a given category
+# JSON API endpoint to view all items of a given category
 @app.route('/catalog/<category_name>/items/JSON')
 def categoryItemsJSON(category_name):
-    main_category = session.query(Category).filter_by(name = category_name).one()
-    items = session.query(Item).filter_by(category_id = main_category.id).order_by(asc(Item.name)).all()
+    main_category = session.query(Category).filter_by(name=category_name).one()
+    items = session.query(Item)
+    items = items.filter_by(category_id=main_category.id)
+    items = items.order_by(asc(Item.name)).all()
     return jsonify(Items=[i.serialize for i in items])
 
 
-#JSON API endpoint to view all content of a given item
+# JSON API endpoint to view all content of a given item
 @app.route('/catalog/<category_name>/<item_name>/JSON')
 def itemJSON(category_name, item_name):
-    item = session.query(Item).filter_by(name = item_name).one()
-    return jsonify(Item = item.serialize)
+    item = session.query(Item).filter_by(name=item_name).one()
+    return jsonify(Item=item.serialize)
 
 
 # run app
 if __name__ == '__main__':
-  app.secret_key = 'super_secret_key'
-  app.debug = True
-  app.run(host = '0.0.0.0', port = 5000)
+    app.secret_key = 'super_secret_key'
+    app.debug = True
+    app.run(host='0.0.0.0', port=5000)
