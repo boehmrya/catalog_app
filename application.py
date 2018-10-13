@@ -318,7 +318,12 @@ def newItem():
 # Edit an item
 @app.route('/catalog/<item_name>/edit/', methods=['GET', 'POST'])
 def editItem(item_name):
+    if 'username' not in login_session:
+        return redirect('login')
     editedItem = session.query(Item).filter_by(name=item_name).one()
+    author = getUserInfo(editedItem.author_id)
+    if login_session['email'] != author.email:
+        return redirect('login')
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -330,23 +335,25 @@ def editItem(item_name):
                                     category_name=editedItem.category.name,
                                     item_name=editedItem.name))
     else:
-        if 'username' not in login_session:
-            return redirect('login')
-        else:
-            categories = session.query(Category)
-            categories = categories.order_by(asc(Category.name)).all()
-            cat = session.query(Category)
-            selected_category = cat.filter_by(id=editedItem.category_id).one()
-            return render_template('editItem.html',
-                                   item=editedItem,
-                                   categories=categories,
-                                   selected_category=selected_category)
+        categories = session.query(Category)
+        categories = categories.order_by(asc(Category.name)).all()
+        cat = session.query(Category)
+        selected_category = cat.filter_by(id=editedItem.category_id).one()
+        return render_template('editItem.html',
+                               item=editedItem,
+                               categories=categories,
+                               selected_category=selected_category)
 
 
 # Delete an item
 @app.route('/catalog/<item_name>/delete/', methods=['GET', 'POST'])
 def deleteItem(item_name):
+    if 'username' not in login_session:
+        return redirect('login')
     itemToDelete = session.query(Item).filter_by(name=item_name).one()
+    author = getUserInfo(itemToDelete.author_id)
+    if login_session['email'] != author.email:
+        return redirect('login')
     if request.method == 'POST':
         session.delete(itemToDelete)
         flash('%s Successfully Deleted' % itemToDelete.name)

@@ -23,7 +23,7 @@
   	   <h3 class="item-name">{{ item.name }} </h3>
        <div class="item-description">{{ item.description }}</div>
        {% if 'username' in session %}
-          {% if session.user_id == creator.id %}
+          {% if session.email == creator.email %}
             <a href="{{ url_for('editItem', item_name = item.name) }}">Edit</a> |
             <a href="{{ url_for('deleteItem', item_name = item.name) }}">Delete</a>
           {% endif %}
