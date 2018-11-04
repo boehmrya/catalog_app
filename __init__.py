@@ -18,7 +18,8 @@ app = Flask(__name__)
 
 
 # Connect to Database and create database session
-engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
+#engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
+engine = create_engine('postgresql://ryan:football8@localhost/catalog')
 Base.metadata.bind = engine
 
 
