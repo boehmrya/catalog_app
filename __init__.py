@@ -12,6 +12,7 @@ import json
 import requests
 import random
 import string
+import os
 
 
 app = Flask(__name__)
@@ -19,7 +20,7 @@ app = Flask(__name__)
 
 # Connect to Database and create database session
 #engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
-engine = create_engine('postgresql://ryan:football8@localhost/catalog')
+engine = create_engine('postgresql://tom:football8@localhost/catalog')
 Base.metadata.bind = engine
 
 
@@ -29,9 +30,14 @@ session = DBSession()
 
 
 # client id for oauth2
+'''
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
+'''
 
+PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
+json_url = os.path.join(PROJECT_ROOT, 'client_secrets.json')
+CLIENT_ID = json.load(open(json_url))['web']['client_id']
 
 APPLICATION_NAME = "Catalog Application"
 
@@ -55,10 +61,18 @@ def fbconnect():
     access_token = request.data
     print "access token received %s " % access_token
 
+    fb_json_url = os.path.join(PROJECT_ROOT, 'fb_client_secrets.json')
+    app_id = json.load(open(fb_json_url))['web']['app_id']
+    '''
     app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
         'web']['app_id']
+
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+    '''
+
+    app_id = json.load(open(fb_json_url))['web']['app_secret']
+
     url = 'https://graph.facebook.com/oauth/access_token?' \
         'grant_type=fb_exchange_token&client_id=%s&client_secret' \
         '=%s&fb_exchange_token=%s' % (app_id, app_secret, access_token)
