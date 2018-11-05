@@ -4,7 +4,7 @@ from datetime import datetime
 
 from database_setup import Base, Category, User, Item
 
-engine = create_engine('postgresql://tom:football8@localhost/catalog')
+engine = create_engine('postgresql://ryan:football8@localhost/catalog')
 #engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance

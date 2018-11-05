@@ -72,6 +72,6 @@ class Item(Base):
 
 
 #engine = create_engine('sqlite:///catalog.db?check_same_thread=False')
-engine = create_engine('postgresql://tom:football8@localhost/catalog')
+engine = create_engine('postgresql://ryan:football8@localhost/catalog')
 
 Base.metadata.create_all(engine)
